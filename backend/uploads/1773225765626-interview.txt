@@ -1,0 +1,175 @@
+JavaScript (ES6+)
+
+Difference between var, let, and const
+
+What is hoisting?
+
+Explain closures with an example
+
+Difference between == and ===
+
+What are arrow functions?
+
+What is event delegation?
+
+Explain promises vs async/await
+
+What is the spread/rest operator?
+
+Shallow copy vs deep copy
+
+What is debounce and throttle?
+
+🔹 React.js
+
+What is React and why use it?
+
+Difference between functional and class components
+
+What are hooks? Explain useState and useEffect
+
+How does React handle re-rendering?
+
+What is virtual DOM?
+
+Controlled vs uncontrolled components
+
+What are props and state?
+
+How do you handle forms in React?
+
+What is conditional rendering?
+
+What is Redux and why use it?
+
+🔹 Node.js
+
+What is Node.js?
+
+How does Node.js handle async operations?
+
+What is the event loop?
+
+Difference between Node.js and Express.js
+
+What are middleware functions?
+
+How do you handle errors in Node.js?
+
+What is process.env?
+
+How do you secure APIs?
+
+What is JWT?
+
+Explain REST architecture
+
+🔹 Express.js
+
+What is Express.js?
+
+Difference between app.use() and app.get()
+
+What are routes and controllers?
+
+What is middleware chaining?
+
+How does Express handle JSON data?
+
+What is CORS?
+
+How do you validate request data?
+
+What are HTTP status codes?
+
+How do you structure an Express project?
+
+What is rate limiting?
+
+🔹 MongoDB
+
+What is MongoDB?
+
+Difference between SQL and NoSQL
+
+What is a collection and document?
+
+What is Mongoose?
+
+Schema vs Model
+
+What are indexes?
+
+How do you perform CRUD operations?
+
+What is aggregation?
+
+What is populate()?
+
+How do you handle relations in MongoDB?
+
+🔹 Authentication & Security
+
+What is JWT and how does it work?
+
+Access token vs refresh token
+
+What is OAuth?
+
+How do you store passwords securely?
+
+What is bcrypt?
+
+How do you protect routes?
+
+What is CSRF and XSS?
+
+How do you handle user roles?
+
+What is HTTPS?
+
+What is CORS policy?
+
+🔹 Git & Tools
+
+Difference between Git and GitHub
+
+What is a branch?
+
+Git merge vs rebase
+
+What is a pull request?
+
+Common Git commands
+
+How do you resolve merge conflicts?
+
+What is Agile?
+
+What is CI/CD?
+
+How do you debug production issues?
+
+How do you optimize performance?
+
+🔹 Coding Tasks (Very Important)
+
+Build a simple CRUD API
+
+Create a login/signup flow using JWT
+
+Fetch API data in React and display it
+
+Create protected routes in React
+
+Implement pagination
+
+Build a reusable React component
+
+Optimize React re-renders
+
+Write a MongoDB query
+
+Fix a broken API response
+
+Debug a React useEffect issue

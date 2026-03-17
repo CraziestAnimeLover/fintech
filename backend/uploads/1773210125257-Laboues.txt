@@ -1,0 +1,295 @@
+COMPLETE SYSTEM ARCHITECTURE
+🧱 High-Level Architecture
+Client (Worker App / Recruiter App)
+        ↓
+React + Tailwind + Google Maps
+        ↓
+Socket.io (Real-time layer)
+        ↓
+Node.js + Express Backend
+        ↓
+MongoDB (Database)
+        ↓
+Redis (Caching + Session)
+        ↓
+Cloud Storage (Images, Docs)
+📂 2️⃣ FULL MERN FOLDER STRUCTURE
+🔹 Backend Structure
+server/
+│
+├── config/
+│   ├── db.js
+│   ├── redis.js
+│
+├── controllers/
+│   ├── authController.js
+│   ├── workerController.js
+│   ├── recruiterController.js
+│   ├── jobController.js
+│   ├── paymentController.js
+│
+├── models/
+│   ├── User.js
+│   ├── Worker.js
+│   ├── Recruiter.js
+│   ├── Job.js
+│   ├── Rating.js
+│   ├── Wallet.js
+│
+├── routes/
+│   ├── authRoutes.js
+│   ├── workerRoutes.js
+│   ├── recruiterRoutes.js
+│   ├── jobRoutes.js
+│
+├── middleware/
+│   ├── authMiddleware.js
+│   ├── roleMiddleware.js
+│
+├── sockets/
+│   ├── workerSocket.js
+│   ├── recruiterSocket.js
+│
+├── cron/
+│   ├── jobReset.js
+│
+└── server.js
+🔹 Frontend Structure
+client/
+│
+├── pages/
+│   ├── WorkerDashboard.jsx
+│   ├── RecruiterDashboard.jsx
+│   ├── MapView.jsx
+│
+├── components/
+│   ├── StatusToggle.jsx
+│   ├── WorkerCard.jsx
+│   ├── BookingModal.jsx
+│
+├── services/
+│   ├── api.js
+│   ├── socket.js
+│
+├── context/
+│   ├── AuthContext.jsx
+│
+└── App.jsx
+🗄️ 3️⃣ COMPLETE DATABASE DESIGN
+🔹 User Collection
+{
+  _id,
+  name,
+  phone,
+  password,
+  role: "worker" | "recruiter" | "admin",
+  createdAt
+}
+🔹 Worker Collection
+{
+  userId,
+  skill,
+  experience,
+  status: "available" | "working" | "offline",
+  trustScore: Number,
+  rating: Number,
+  totalJobs: Number,
+  location: {
+    type: { type: String },
+    coordinates: [Number] // lng, lat
+  },
+  isEmergencyBoost: Boolean,
+  walletBalance: Number
+}
+
+Important:
+
+workerSchema.index({ location: "2dsphere" });
+🔹 Job Collection
+{
+  workerId,
+  recruiterId,
+  startTime,
+  endTime,
+  status: "pending" | "accepted" | "completed" | "cancelled",
+  price,
+  surgeMultiplier,
+  ratingGiven: Boolean
+}
+🔹 Wallet Collection
+{
+  userId,
+  balance,
+  transactions: [
+    {
+      amount,
+      type: "credit" | "debit",
+      date
+    }
+  ]
+}
+🔥 4️⃣ CORE FEATURES FLOW
+🟢 Worker Goes Online
+
+Worker logs in
+
+Socket connects
+
+Location starts updating
+
+Status = "available"
+
+Marker becomes GREEN on map
+
+📍 Recruiter Search Nearby Workers
+
+MongoDB Query:
+
+Worker.find({
+  status: "available",
+  location: {
+    $near: {
+      $geometry: {
+        type: "Point",
+        coordinates: [lng, lat]
+      },
+      $maxDistance: 5000
+    }
+  }
+});
+🔴 When Hired
+
+Recruiter sends booking request
+
+Worker accepts
+
+Job created
+
+Worker status = "working"
+
+Marker turns RED
+
+🔁 After Job Ends
+
+Options:
+
+Auto change status
+
+Or cron job runs every hour
+
+🧠 5️⃣ ADVANCED FEATURES LOGIC
+💳 Trust Score Formula
+Trust Score =
+(Completed Jobs × 2)
++ (Average Rating × 10)
+- (Cancellations × 5)
+📈 Surge Pricing Logic
+If workersAvailable < demandThreshold:
+   price = basePrice × 1.5
+🚨 Emergency Boost
+Sort by:
+isEmergencyBoost: true first
+
+Expires after 2 hours.
+
+💰 6️⃣ MONETIZATION STRUCTURE
+
+10% commission per job
+
+Premium recruiter monthly plan
+
+Boost worker profile ₹49/day
+
+Insurance commission
+
+Surge pricing share
+
+🗺️ 7️⃣ FULL DEVELOPMENT ROADMAP (6 Months)
+🥇 Phase 1 (Month 1–2)
+
+Goal: MVP
+
+✔ Auth system
+✔ Worker registration
+✔ Status toggle
+✔ Geo-location tracking
+✔ Recruiter map view
+✔ Basic booking
+
+Launch beta in one city.
+
+🥈 Phase 2 (Month 3–4)
+
+✔ Wallet system
+✔ Payment integration
+✔ Ratings system
+✔ Trust score
+✔ Bulk hiring
+
+Start marketing locally.
+
+🥉 Phase 3 (Month 5–6)
+
+✔ Surge pricing
+✔ Emergency boost
+✔ AI income prediction
+✔ Auto replacement
+✔ Admin dashboard
+
+Now it becomes scalable startup.
+
+📊 8️⃣ SCALABILITY PLAN
+
+When users increase:
+
+Add:
+
+Redis for caching workers
+
+Load balancer
+
+Separate microservices
+
+AWS S3 storage
+
+Docker containers
+
+📈 9️⃣ GO-TO-MARKET STRATEGY (India)
+
+Start with:
+
+Small construction areas
+
+Labour markets
+
+Industrial zones
+
+Offline marketing:
+
+Posters
+
+WhatsApp groups
+
+Contractor partnerships
+
+🏆 Final Positioning
+
+You are NOT building small project.
+
+You are building:
+
+“India’s Real-Time Labour Network”
+
+More dynamic than:
+
+Urban Company
+
+🔥 Reality Advice
+
+Since you're already MERN developer intern:
+
+This project can:
+
+✔ Strengthen your resume massively
+✔ Help you apply to funded startups
+✔ Even turn into real startup

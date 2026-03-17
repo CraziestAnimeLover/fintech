@@ -1,0 +1,53 @@
+backend
+   |
+   |---- controllers
+   |        agentController.js
+   |
+   |---- models
+   |        agentModel.js
+   |
+   |---- routes
+   |        agentRoutes.js
+   |
+   |---- services
+   |        agentService.js
+Agent Frontend Pages (React)
+
+Pages in **React.js:
+
+AgentLogin
+AgentDashboard
+CreateUser
+DepositMoney
+WithdrawMoney
+Transactions
+CommissionHistory
+
+Admin creates Agent
+
+Agent creates User
+
+User gives cash to Agent
+
+Agent deposits money
+
+Agent wallet -1000
+User wallet +1000
+
+Agent earns commission
+
+
+
+--------------------
+Admin
+   |
+   |---- create agents
+   |
+Agent
+   |
+   |---- create users
+   |---- deposit / withdraw
+   |
+User
+   |
+   |---- send / receive money
