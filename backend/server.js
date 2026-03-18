@@ -41,7 +41,7 @@ app.use(
 /* ---------------- CORS ---------------- */
 app.use(
   cors({
-    origin: ["http://localhost:3000","https://fintech-craziestanimelovers-projects.vercel.app"],
+    origin: ["http://localhost:3000","https://fintech-craziestanimelovers-projects.vercel.app","https://fintech-kappa-two.vercel.app"],
     credentials: true,
   })
 );
