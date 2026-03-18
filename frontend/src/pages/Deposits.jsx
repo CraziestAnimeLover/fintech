@@ -62,23 +62,26 @@ const Deposits = () => {
     setFilteredDeposits(data);
   }, [search, statusFilter, fromDate, toDate, deposits]);
 
-  const approveDeposit = async (id) => {
-    try {
-      await adminAPI.approveDeposit(id);
-      fetchDeposits();
-    } catch {
-      alert("Failed");
-    }
-  };
+ const approveDeposit = async (id) => {
+  try {
+    await adminAPI.approveDeposit(id);
+    alert("✅ Approved successfully");
+    fetchDeposits();
+  } catch (err) { // ✅ define 'err' here
+    console.error("❌ API ERROR:", err.response?.data || err);
+    alert(err.response?.data?.message || "Something went wrong");
+  }
+};
 
-  const rejectDeposit = async (id) => {
-    try {
-      await adminAPI.rejectDeposit(id);
-      fetchDeposits();
-    } catch {
-      alert("Failed");
-    }
-  };
+const rejectDeposit = async (id) => {
+  try {
+    await adminAPI.rejectDeposit(id);
+    fetchDeposits();
+  } catch (err) { // ✅ define 'err' here
+    console.error("❌ API ERROR:", err.response?.data || err);
+    alert(err.response?.data?.message || "Failed to reject deposit");
+  }
+};
 
   // ✅ Download Excel for filtered deposits
   const downloadExcel = () => {

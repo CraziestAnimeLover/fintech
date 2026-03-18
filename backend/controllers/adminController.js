@@ -250,36 +250,29 @@ export const verifyDocuments = async (req, res) => {
 // Approve deposit and handle wallet & commission
 export const approveDeposit = async (req, res) => {
   try {
+    const tx = await Transaction.findById(req.params.id)
+      .populate("user")
+      .populate("agent");
 
-   const tx = await Transaction.findById(req.params.id)
-  .populate("user")
-  .populate("agent");   // ✅ ADD THIS
-
-    if (!tx) {
-      return res.status(404).json({ message: "Transaction not found" });
-    }
-
-    if (tx.method !== "deposit") {
-      return res.status(400).json({ message: "Invalid transaction type" });
-    }
-
-    if (tx.status !== "pending") {
-      return res.status(400).json({ message: "Already processed" });
-    }
+    if (!tx) return res.status(404).json({ message: "Transaction not found" });
+    if (tx.method !== "deposit") return res.status(400).json({ message: "Invalid transaction type" });
+    if (tx.status !== "pending") return res.status(400).json({ message: "Already processed" });
 
     tx.status = "approved";
-
     const mdrAmount = (tx.amount * tx.mdr) / 100;
     const settlementAmount = tx.amount - mdrAmount;
-
     tx.settlementAmount = settlementAmount;
-
     await tx.save();
 
-    const wallet = await Wallet.findOne({ user: tx.user._id });
-
+    // ✅ Wallet check / auto-create
+    let wallet = await Wallet.findOne({ user: tx.user._id });
     if (!wallet) {
-      return res.status(404).json({ message: "Wallet not found" });
+      wallet = await Wallet.create({
+        user: tx.user._id,
+        balance: 0,
+        payinWallet: 0,
+        settlementBalance: 0,
+      });
     }
 
     wallet.balance += settlementAmount;
@@ -288,23 +281,19 @@ export const approveDeposit = async (req, res) => {
 
     await wallet.save();
 
-   
-await createCommission(tx);
+    await createCommission(tx);
+
     res.json({
       success: true,
       message: "Deposit approved",
-      data: tx
+      data: tx,
     });
-
   } catch (error) {
-
     console.error(error);
-
     res.status(500).json({
       success: false,
-      message: "Server error"
+      message: "Server error",
     });
-
   }
 };
 

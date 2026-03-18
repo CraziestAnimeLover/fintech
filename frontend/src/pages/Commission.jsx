@@ -33,21 +33,35 @@ const Commission = () => {
     if (user.role === "admin") fetchAgents();
   }, [filters]);
 
-  const fetchCommissions = async () => {
-    setLoading(true);
-    try {
-      const query = new URLSearchParams(filters).toString();
- const res = await adminAPI.getCommissions(query);
+ const fetchCommissions = async () => {
+  setLoading(true);
+  try {
+    const res = await adminAPI.getCommissions(filters);
 
-      if (res.data.success) {
-        setCommissions(res.data.data.commissions);
-        setSummary(res.data.data.summary);
-      }
-    } catch (err) {
-      console.error("Commission fetch error:", err);
+    console.log("Commission API:", res.data); // 👈 DEBUG
+
+    if (res?.data?.success) {
+      const commissionsData = res?.data?.data?.commissions || [];
+      const summaryData = res?.data?.data?.summary || {};
+
+      setCommissions(Array.isArray(commissionsData) ? commissionsData : []);
+      setSummary({
+        total: summaryData.total || 0,
+        pending: summaryData.pending || 0,
+        paid: summaryData.paid || 0,
+        deductions: summaryData.deductions || 0,
+        adminTotal: summaryData.adminTotal || 0,
+        agentTotal: summaryData.agentTotal || 0,
+      });
+    } else {
+      setCommissions([]);
     }
-    setLoading(false);
-  };
+  } catch (err) {
+    console.error("Commission fetch error:", err);
+    setCommissions([]);
+  }
+  setLoading(false);
+};
 
   const fetchAgents = async () => {
     try {

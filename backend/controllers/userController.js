@@ -1,5 +1,5 @@
 import User from "../models/User.js";
-
+import Commission from "../models/commissionModel.js";
 import Wallet from "../models/Wallet.js";
 import Transaction from "../models/Transaction.js";
 
@@ -539,36 +539,59 @@ export const getCurrentUser = async (req, res) => {
 
 export const depositRequest = async (req, res) => {
   try {
-
     const { amount, utr } = req.body;
 
-    // Validate amount
     if (!amount || amount <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid amount"
-      });
+      return res.status(400).json({ success: false, message: "Invalid amount" });
     }
 
-    // Check UTR
     if (!utr) {
-      return res.status(400).json({
-        success: false,
-        message: "UTR number required"
+      return res.status(400).json({ success: false, message: "UTR number required" });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    // Create transaction
+    const transaction = await Transaction.create({
+      user: user._id,
+      agent: user.agent || null,
+      amount,
+      utr,
+      method: "deposit",
+      status: "pending"
+    });
+
+    // Commission Logic
+    const commissionRecipients = [];
+
+    const adminUser = await User.findOne({ role: "admin" });
+    if (adminUser) {
+      commissionRecipients.push({
+        agent: adminUser._id,
+        type: "admin",
+        amount: Number(amount) * 0.1, // ensure numeric
+        transaction: transaction._id
       });
     }
 
-    // Create deposit transaction
-const user = await User.findById(req.user._id);
+    if (user.agent) {
+      commissionRecipients.push({
+        agent: user.agent,
+        type: "agent",
+        amount: Number(amount) * 0.05,
+        transaction: transaction._id
+      });
+    }
 
-const transaction = await Transaction.create({
-  user: user._id,
-  agent: user.agent,   // ✅ ADD THIS LINE
-  amount,
-  utr,
-  method: "deposit",
-  status: "pending"
-});
+    // Save commissions safely
+    for (const c of commissionRecipients) {
+      try {
+        await Commission.create(c);
+      } catch (err) {
+        console.error("Failed to create commission:", c, err.message);
+      }
+    }
 
     res.status(201).json({
       success: true,
@@ -577,17 +600,10 @@ const transaction = await Transaction.create({
     });
 
   } catch (error) {
-
-    console.error(error);
-
-    res.status(500).json({
-      success: false,
-      message: "Server error"
-    });
-
+    console.error("DEPOSIT ERROR:", error);
+    res.status(500).json({ success: false, message: error.message || "Server error" });
   }
 };
-
 
 export const getWallet = async (req, res) => {
   try {

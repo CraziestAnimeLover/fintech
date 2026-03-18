@@ -3,13 +3,21 @@ import Wallet from "../models/Wallet.js";
 
 export const createCommission = async (transaction) => {
   try {
-    // prevent duplicate commission
+    console.log("🔥 Commission Triggered:", transaction._id);
+
     if (transaction.commissionGenerated) return;
+
+    // 🔥 SAFETY FIX (old data support)
+    if (!transaction.agent && transaction.user?.agent) {
+      transaction.agent = transaction.user.agent;
+    }
 
     const mdrAmount = (transaction.amount * transaction.mdr) / 100;
 
-    // ✅ CASE 1: NO AGENT → ADMIN GETS FULL
+    // ❌ NO AGENT → FULL ADMIN
     if (!transaction.agent) {
+      console.log("❌ NO AGENT → ADMIN ONLY");
+
       transaction.adminShare = mdrAmount;
       transaction.platformProfit = mdrAmount;
       transaction.agentShare = 0;
@@ -17,18 +25,19 @@ export const createCommission = async (transaction) => {
 
       await transaction.save();
 
-      // optional: admin commission entry
       await Commission.create({
         type: "admin",
         transaction: transaction._id,
         amount: mdrAmount,
-        status: "pending",
+        status: "paid",
       });
 
       return;
     }
 
-    // ✅ CASE 2: AGENT EXISTS → SPLIT
+    // ✅ AGENT EXISTS
+    console.log("✅ AGENT FOUND:", transaction.agent);
+
     const agentShare = mdrAmount * 0.5;
     const adminShare = mdrAmount - agentShare;
 
@@ -39,34 +48,37 @@ export const createCommission = async (transaction) => {
 
     await transaction.save();
 
-    // ✅ Agent commission
+    // 👉 Agent commission
     await Commission.create({
       agent: transaction.agent,
       type: "agent",
       transaction: transaction._id,
       amount: agentShare,
-      status: "pending",
+      status: "paid",
     });
 
-    // ✅ Admin commission
+    // 👉 Admin commission
     await Commission.create({
       type: "admin",
       transaction: transaction._id,
       amount: adminShare,
-      status: "pending",
+      status: "paid",
     });
 
-    // ✅ Update agent wallet
-    const agentWallet = await Wallet.findOne({ user: transaction.agent });
+    // 👉 Update wallet
+    let wallet = await Wallet.findOne({ user: transaction.agent });
 
-    if (agentWallet) {
-      agentWallet.commissionBalance =
-        (agentWallet.commissionBalance || 0) + agentShare;
-
-      await agentWallet.save();
+    if (!wallet) {
+      wallet = await Wallet.create({
+        user: transaction.agent,
+        commissionBalance: 0,
+      });
     }
 
+    wallet.commissionBalance += agentShare;
+    await wallet.save();
+
   } catch (err) {
-    console.error("Commission error:", err);
+    console.error("❌ Commission error:", err);
   }
 };
