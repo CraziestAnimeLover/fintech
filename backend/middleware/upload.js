@@ -1,14 +1,14 @@
 import multer from "multer";
 import fs from "fs";
 
-const uploadPath = "uploads";
+const uploadPath = "/tmp/uploads";
 
+// Ensure directory exists (Vercel safe)
 if (!fs.existsSync(uploadPath)) {
   fs.mkdirSync(uploadPath, { recursive: true });
 }
 
 const storage = multer.diskStorage({
-
   destination: (req, file, cb) => {
     cb(null, uploadPath);
   },
@@ -16,7 +16,6 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => {
     cb(null, Date.now() + "-" + file.originalname);
   }
-
 });
 
 export const upload = multer({ storage });
