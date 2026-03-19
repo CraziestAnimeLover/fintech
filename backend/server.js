@@ -27,6 +27,29 @@ import commissionRoutes from "./routes/commissionRoutes.js";
 
 const app = express();
 
+// 🔥 SUPER IMPORTANT FIX (put this BEFORE everything)
+app.use((req, res, next) => {
+  res.header(
+    "Access-Control-Allow-Origin",
+    "https://fintech-kappa-two.vercel.app"
+  );
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+  res.header(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, OPTIONS"
+  );
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200); // 🔥 THIS FIXES PREFLIGHT
+  }
+
+  next();
+});
+
 /* ---------------- BODY PARSER ---------------- */
 app.use(json());
 
