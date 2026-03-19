@@ -33,11 +33,11 @@ app.use(
 );
 
 /* ---------------- CORS ---------------- */
-const allowedOrigins = [
-  "http://localhost:3000",
-  "https://fintech-kappa-two.vercel.app",
-  "https://fintech-craziestanimelovers-projects.vercel.app"
-];
+app.use(cors({
+  origin: "https://fintech-kappa-two.vercel.app", // your frontend URL
+  methods: ["GET","POST","PUT","DELETE","OPTIONS"],
+  credentials: true // if you send cookies/auth headers
+}));
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;
