@@ -139,14 +139,27 @@ withdraw: (data) => api.post("/wallet/withdraw", data),
   updateDevKeys: (data) => api.put("/developer/update", data),
 
   // ----- Bank Accounts -----
+// ----- Bank Accounts -----
 getBankAccounts: async () => {
-  const res = await api.get("/bank-accounts");
-  return { banks: res.data.accounts };
+  const res = await api.get("/bank-accounts"); // ✅ USE api instance
+  return res.data;
 },
 addBankAccount: (data) => api.post("/bank-accounts", data),
-updateBankAccount: (id, data) => api.put(`/bank-accounts/${id}`, data),
-deleteBankAccount: (id) => api.delete(`/bank-accounts/${id}`),
-setDefaultBank: (id) => api.put(`/bank-accounts/default/${id}`),
+
+updateBankAccount: (id, data) =>
+  api.put(`/bank-accounts/${id}`, data),
+
+deleteBankAccount: (id) =>
+  api.delete(`/bank-accounts/${id}`),
+
+setDefaultBank: (id) =>
+  api.put(`/bank-accounts/default/${id}`),
+
+// 🔥 ADD THIS (IMPORTANT)
+verifyBank: async (data) => {
+  const res = await api.post("/bank-accounts/verify", data);
+  return res.data;
+},
 
   // ----- OTP Verification -----
   verifyOtp: (email, otp, role) => api.post("/auth/verify-otp", { email, otp, role }),

@@ -1,33 +1,47 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { adminAPI } from "../services/api";
-import {
-  Users,
-  UserCheck,
-  UserX,
-  Shield,
-  User,
-  Theater,
-  PlusCircle,
-  Settings,
-  Activity,
-  DollarSign,
-  CreditCard
+import { 
+  Users, UserCheck, UserX, Theater, Activity, DollarSign, ArrowUpRight 
 } from "lucide-react";
+import Cards from "../admin/commision/Cards";
+import Charts from "../admin/commision/Charts";
+import Filters from "../admin/commision/Filters";
+import CommissionTable from "../admin/commision/CommissionTable";
 
-const StatCard = ({ title, value, Icon, color }) => (
-  <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="text-sm text-gray-500 mb-1">{title}</p>
-        <p className="text-3xl font-bold text-gray-800">{value}</p>
+// ================= StatCard =================
+const StatCard = ({ title, value, Icon, bgColor, iconColor }) => (
+  <div className="bg-white rounded-[2.5rem] p-8 border border-gray-50 shadow-sm hover:shadow-md transition-all duration-300">
+    <div className="flex flex-col gap-6">
+      <div className={`${bgColor} w-14 h-14 rounded-2xl flex items-center justify-center`}>
+        <Icon className={iconColor} size={28} />
       </div>
-      <div
-        className={`${color} w-14 h-14 rounded-full flex items-center justify-center`}
-      >
-        <Icon className="text-white" size={26} />
+      <div>
+        <p className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-1">{title}</p>
+        <p className="text-4xl font-black text-gray-900 tracking-tighter">{value}</p>
       </div>
     </div>
   </div>
+);
+
+// ================= QuickAction =================
+const QuickAction = ({ href, label, Icon, bgColor, textColor, badge }) => (
+  <a
+    href={href}
+    className={`group relative p-6 ${bgColor} rounded-[2rem] transition-all hover:scale-[1.02] active:scale-[0.98] flex flex-col items-center justify-center text-center gap-3 overflow-hidden`}
+  >
+    <div className="absolute top-4 right-4 opacity-10 group-hover:opacity-20 transition-opacity">
+      <ArrowUpRight size={40} />
+    </div>
+    <div className="p-4 bg-white/80 backdrop-blur-sm rounded-2xl group-hover:bg-white transition-colors shadow-sm">
+      <Icon className={textColor} size={26} />
+    </div>
+    <p className={`font-black text-xs uppercase tracking-widest ${textColor}`}>{label}</p>
+    {badge > 0 && (
+      <span className="absolute top-4 right-4 bg-black text-white text-[10px] font-black px-2.5 py-1 rounded-full border-2 border-white">
+        {badge}
+      </span>
+    )}
+  </a>
 );
 
 const AdminDashboard = () => {
@@ -35,27 +49,29 @@ const AdminDashboard = () => {
     totalUsers: 0,
     verifiedUsers: 0,
     unverifiedUsers: 0,
-    adminUsers: 0,
-    regularUsers: 0,
     agentUsers: 0,
     totalTransactions: 0,
-    totalRevenue: 0,
-    systemBalance: 0,
     pendingKyc: 0
   });
-
+  const [commissionsSummary, setCommissionsSummary] = useState({
+    total: 0,
+    agentTotal: 0,
+    adminTotal: 0,
+    pending: 0,
+    paid: 0,
+    deductions: 0
+  });
+  const [commissions, setCommissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Fetch Admin Stats
   const fetchStats = useCallback(async () => {
     try {
       setLoading(true);
-      const { data } = await adminAPI.getStats();
-      if (data?.success) {
-        setStats(data.data);
-      } else {
-        setError("Failed to load statistics");
-      }
+      const res = await adminAPI.getStats();
+      if (res.data?.success) setStats(res.data.data || {});
+      else setError("Failed to load statistics");
     } catch (err) {
       console.error(err);
       setError("Failed to load statistics");
@@ -64,118 +80,112 @@ const AdminDashboard = () => {
     }
   }, []);
 
+  // Fetch Commissions Summary
+  const fetchCommissions = useCallback(async () => {
+    try {
+      const res = await adminAPI.getCommissions({});
+      if (res.data?.success) {
+        setCommissions(res.data.data?.commissions || []);
+        setCommissionsSummary(res.data.data?.summary || {});
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }, []);
+
   useEffect(() => {
     fetchStats();
-    // Optional: refresh every 60 seconds
+    fetchCommissions();
     const interval = setInterval(fetchStats, 60000);
     return () => clearInterval(interval);
-  }, [fetchStats]);
+  }, [fetchStats, fetchCommissions]);
 
-const statCards = useMemo(
-  () => [
-    { id: "total", title: "Total Users", value: stats.totalUsers || 0, Icon: Users, color: "bg-blue-500" },
-    { id: "verified", title: "Verified Users", value: stats.verifiedUsers || 0, Icon: UserCheck, color: "bg-green-500" },
-    { id: "unverified", title: "Unverified Users", value: stats.unverifiedUsers || 0, Icon: UserX, color: "bg-yellow-500" },
-    // { id: "admins", title: "Admins", value: stats.adminUsers || 0, Icon: Shield, color: "bg-purple-500" },
-    { id: "agents", title: "Agents", value: stats.agentUsers || 0, Icon: Theater, color: "bg-pink-500" },
-    { id: "users", title: "Regular Users", value: stats.regularUsers || 0, Icon: User, color: "bg-indigo-500" },
-    // Financial Layer
-    { id: "transactions", title: "Total Transactions", value: stats.totalTransactions || 0, Icon: Activity, color: "bg-orange-500" },
-    { 
-      id: "revenue", 
-      title: "Total Revenue", 
-      value: `₹${new Intl.NumberFormat().format(stats.totalRevenue || 0)}`, 
-      Icon: DollarSign, 
-      color: "bg-emerald-600" 
-    },
-    { 
-      id: "system-balance", 
-      title: "System Float", 
-      value: `₹${new Intl.NumberFormat().format(stats.systemBalance || 0)}`, 
-      Icon: CreditCard, 
-      color: "bg-red-500" 
-    },
-  ],
-  [stats]
-);
+  const statCards = useMemo(
+    () => [
+      { id: "total", title: "Total Users", value: stats.totalUsers || 0, Icon: Users, bgColor: "bg-blue-50", iconColor: "text-blue-600" },
+      { id: "verified", title: "Verified", value: stats.verifiedUsers || 0, Icon: UserCheck, bgColor: "bg-emerald-50", iconColor: "text-emerald-600" },
+      { id: "unverified", title: "Unverified", value: stats.unverifiedUsers || 0, Icon: UserX, bgColor: "bg-rose-50", iconColor: "text-rose-600" },
+      { id: "agents", title: "Agents", value: stats.agentUsers || 0, Icon: Theater, bgColor: "bg-purple-50", iconColor: "text-purple-600" },
+      { id: "transactions", title: "Transactions", value: stats.totalTransactions || 0, Icon: Activity, bgColor: "bg-orange-50", iconColor: "text-orange-600" },
+      {
+        id: "revenue",
+        title: "Total Revenue",
+        value: `₹${new Intl.NumberFormat().format(commissionsSummary.total || 0)}`,
+        Icon: DollarSign,
+        bgColor: "bg-gray-900",
+        iconColor: "text-white"
+      }
+    ],
+    [stats, commissionsSummary]
+  );
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64 text-gray-500 text-lg">
-        Loading dashboard...
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="flex items-center justify-center h-screen text-gray-400 font-bold tracking-widest animate-pulse uppercase text-sm">
+      Initializing Dashboard...
+    </div>
+  );
 
   return (
-    <div>
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">Dashboard Overview</h2>
+    <div className="max-w-7xl mx-auto p-6 space-y-12">
+      <header className="mb-10">
+        <h2 className="text-3xl font-black text-gray-900 tracking-tighter">Dashboard Overview</h2>
+        <p className="text-gray-400 font-medium mt-1 text-sm">
+          Real-time system health, user analytics & commission revenue.
+        </p>
+      </header>
 
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-          {error}
+        <div className="bg-rose-50 border border-rose-100 text-rose-600 px-6 py-4 rounded-2xl mb-8 font-bold text-sm">
+          ⚠️ {error}
         </div>
       )}
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        {statCards.map((card) => (
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {statCards.map(card => (
           <StatCard key={card.id} {...card} />
         ))}
       </div>
 
+      {/* Commission Charts */}
+      <section className="bg-white p-6 rounded-xl shadow-md">
+        <h3 className="text-xl font-semibold mb-4">Commission Overview</h3>
+        <Charts summary={commissionsSummary} type="bar" />
+      </section>
+
       {/* Quick Actions */}
-      <div className="bg-white rounded-xl shadow-lg p-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* <a
-            href="/admin/create-admin"
-            className="p-4 bg-purple-100 rounded-lg hover:bg-purple-200 transition text-center"
-          >
-            <Shield className="mx-auto text-purple-700" size={28} />
-            <p className="mt-2 font-medium text-purple-800">Create Admin</p>
-          </a> */}
-
-          <a
-            href="/admin/create-agent"
-            className="p-4 bg-pink-100 rounded-lg hover:bg-pink-200 transition text-center"
-          >
-            <Theater className="mx-auto text-pink-700" size={28} />
-            <p className="mt-2 font-medium text-pink-800">Create Agent</p>
-          </a>
-
-          <a
-            href="/admin/users"
-            className="p-4 bg-blue-100 rounded-lg hover:bg-blue-200 transition text-center"
-          >
-            <Users className="mx-auto text-blue-700" size={28} />
-            <p className="mt-2 font-medium text-blue-800">Manage Users</p>
-          </a>
-
-          {/* Fintech-specific Quick Actions */}
-          <a
-            href="/admin/kyc-requests"
-            className="p-4 bg-yellow-100 rounded-lg hover:bg-yellow-200 transition text-center relative"
-          >
-            <UserCheck className="mx-auto text-yellow-700" size={28} />
-            <p className="mt-2 font-medium text-yellow-800">Approve KYC</p>
-            {stats.pendingKyc > 0 && (
-              <span className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                {stats.pendingKyc}
-              </span>
-            )}
-          </a>
-
-          {/* <a
-            href="/admin/transaction-logs"
-            className="p-4 bg-gray-100 rounded-lg hover:bg-gray-200 transition text-center"
-          >
-            <Settings className="mx-auto text-gray-700" size={28} />
-            <p className="mt-2 font-medium text-gray-800">System Logs</p>
-          </a> */}
+      <section className="bg-white rounded-[3rem] shadow-sm border border-gray-50 p-10">
+        <div className="flex justify-between items-center mb-8">
+          <h3 className="text-xl font-black text-gray-900 tracking-tight">Quick Actions</h3>
+          <span className="text-[10px] font-bold text-gray-300 uppercase tracking-widest border px-3 py-1 rounded-full">Admin Tools</span>
         </div>
-      </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <QuickAction
+            href="/admin/create-agent"
+            label="Create Agent"
+            Icon={Theater}
+            bgColor="bg-indigo-50"
+            textColor="text-indigo-700"
+          />
+          <QuickAction
+            href="/admin/users"
+            label="Manage Users"
+            Icon={Users}
+            bgColor="bg-blue-50"
+            textColor="text-blue-700"
+          />
+          <QuickAction
+            href="/admin/kyc-requests"
+            label="Approve KYC"
+            Icon={UserCheck}
+            bgColor="bg-amber-50"
+            textColor="text-amber-700"
+            badge={stats.pendingKyc}
+          />
+        </div>
+      </section>
+
     </div>
   );
 };

@@ -5,26 +5,23 @@ import {
   updateBankAccount,
   deleteBankAccount,
   setDefaultBank,
+  verifyBankAccount,
 } from "../controllers/bankController.js";
+
 import { protect } from "../middleware/authMiddleware.js";
 
 const router = Router();
 
-router.use(protect); // all routes need authentication
+router.use(protect);
 
-// Create a bank account
+// 🔥 VERIFY BANK
+router.post("/bank-accounts/verify", verifyBankAccount);
+
+// CRUD
 router.post("/bank-accounts", addBankAccount);
-
-// Get all bank accounts for the user
 router.get("/bank-accounts", getBankAccounts);
-
-// Update a bank account
 router.put("/bank-accounts/:id", updateBankAccount);
-
-// Delete a bank account
 router.delete("/bank-accounts/:id", deleteBankAccount);
-
-// Set a bank account as default
 router.put("/bank-accounts/default/:id", setDefaultBank);
 
 export default router;
