@@ -26,26 +26,20 @@ app.use(
 );
 
 /* ---------------- CORS ---------------- */
-const allowedOrigins = ["https://fintech-kappa-two.vercel.app"]; // define allowed origins
+const allowedOrigins = ["https://fintech-kappa-two.vercel.app"];
 
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-  }
-  res.setHeader("Access-Control-Allow-Credentials", "true");
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
-  );
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "GET, POST, PUT, DELETE, OPTIONS"
-  );
-
-  if (req.method === "OPTIONS") return res.sendStatus(200);
-  next();
-});
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true); // allow mobile apps or curl requests with no origin
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error("CORS not allowed"));
+    },
+    credentials: true, // important if sending cookies or Authorization headers
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"],
+  })
+);
 
 /* ---------------- STATIC FILES ---------------- */
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
