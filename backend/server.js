@@ -132,21 +132,6 @@ app.use((req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-/* ---------------- SERVER START ---------------- */
-const startServer = async () => {
-  try {
-    await connectDB(); // Connect to MongoDB
-
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-      console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
-    });
-  } catch (err) {
-    console.error("Failed to start server:", err.message);
-    process.exit(1);
-  }
-};
-
-startServer();
+connectDB();
 
 export default app;
