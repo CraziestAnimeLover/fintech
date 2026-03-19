@@ -8,14 +8,7 @@ import passport from "./config/passport.js";
 import { connectDB } from "./config/db.js";
 
 import authRoutes from "./routes/authRoutes.js";
-import userRoutes from "./routes/userRoutes.js";
-import adminRoutes from "./routes/adminRoutes.js";
-import developerRoutes from "./routes/developerRoutes.js";
-import payoutRoutes from "./routes/payoutRoutes.js";
-import walletRoutes from "./routes/walletRoutes.js";
-import bankRoutes from "./routes/bankRoutes.js";
-import agentRoutes from "./routes/agentRoutes.js";
-import commissionRoutes from "./routes/commissionRoutes.js";
+// ... other imports
 
 dotenv.config();
 
@@ -33,29 +26,24 @@ app.use(
 );
 
 /* ---------------- CORS ---------------- */
-app.use(cors({
-  origin: "https://fintech-kappa-two.vercel.app", // your frontend URL
-  methods: ["GET","POST","PUT","DELETE","OPTIONS"],
-  credentials: true // if you send cookies/auth headers
-}));
+const allowedOrigins = ["https://fintech-kappa-two.vercel.app"]; // define allowed origins
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
-    res.header("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Origin", origin);
   }
-
-  res.header("Access-Control-Allow-Credentials", "true");
-  res.header(
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.setHeader(
     "Access-Control-Allow-Headers",
     "Origin, X-Requested-With, Content-Type, Accept, Authorization"
   );
-  res.header(
+  res.setHeader(
     "Access-Control-Allow-Methods",
     "GET, POST, PUT, DELETE, OPTIONS"
   );
 
-  if (req.method === "OPTIONS") return res.sendStatus(200); // preflight
+  if (req.method === "OPTIONS") return res.sendStatus(200);
   next();
 });
 
@@ -71,7 +59,7 @@ app.use(
     cookie: {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "none", // important for cross-site cookies (Google Auth)
+      sameSite: "none",
     },
   })
 );
@@ -82,14 +70,7 @@ app.use(passport.session());
 
 /* ---------------- ROUTES ---------------- */
 app.use("/api/auth", authRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/admin", adminRoutes);
-app.use("/api/developer", developerRoutes);
-app.use("/api", payoutRoutes);
-app.use("/api/wallet", walletRoutes);
-app.use("/api", bankRoutes);
-app.use("/api/agents", agentRoutes);
-app.use("/api/commissions", commissionRoutes);
+// ... other routes
 
 app.get("/", (req, res) => res.send("API is running..."));
 app.get("/api/health", (req, res) =>
