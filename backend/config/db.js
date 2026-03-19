@@ -1,25 +1,21 @@
 // config/db.js
 import mongoose from "mongoose";
 
-let cached = global.mongoose;
-
-if (!cached) cached = global.mongoose = { conn: null, promise: null };
-
 export const connectDB = async () => {
-  if (cached.conn) return cached.conn;
+  try {
+    if (!process.env.MONGODB_URI) {
+      console.error("MongoDB URI not configured in .env");
+      process.exit(1);
+    }
 
-  if (!process.env.MONGODB_URI) {
-    console.error("MongoDB URI not configured");
+    await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+
+    console.log("MongoDB connected successfully");
+  } catch (err) {
+    console.error("MongoDB connection failed:", err.message);
     process.exit(1);
   }
-
-  if (!cached.promise) {
-    cached.promise = mongoose.connect(process.env.MONGODB_URI, {
-      bufferCommands: false, // disable Mongoose buffering
-    }).then((mongoose) => mongoose);
-  }
-
-  cached.conn = await cached.promise;
-  console.log("MongoDB connected successfully");
-  return cached.conn;
 };

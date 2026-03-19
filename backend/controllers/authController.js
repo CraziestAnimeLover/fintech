@@ -10,21 +10,32 @@ import jwt from "jsonwebtoken";
 // @route POST /api/auth/send-otp
 export async function sendOtpLogin(req, res) {
   try {
-    await connectDB(); // ensure DB connected
-
     const { email, role } = req.body;
-    if (!email) return res.status(400).json({ success: false, message: "Email required" });
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: "Email is required" });
+    }
 
     const user = await User.findOne({ email, role });
-    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
 
     const otp = await user.generateOtp();
+    console.log(`Generated OTP for ${email}: ${otp}`);
+
     await sendOtp(email, otp);
 
-    return res.status(200).json({ success: true, message: "OTP sent successfully" });
+    res.status(200).json({ success: true, message: "OTP sent successfully" });
+
   } catch (error) {
     console.error("sendOtpLogin error:", error);
-    return res.status(500).json({ success: false, message: "Error sending OTP", error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Error sending OTP",
+      error: error.message // include for debugging
+    });
   }
 }
 
@@ -222,7 +233,7 @@ export const googleCallback = (req, res) => {
     );
 
     const frontendUrl =
-      process.env.FRONTEND_URL || "http://localhost:5173";
+      process.env.FRONTEND_URL || "http://localhost:3000";
 
     res.redirect(`${frontendUrl}/login?token=${token}`);
   } catch (err) {
