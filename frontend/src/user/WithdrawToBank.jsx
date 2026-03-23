@@ -1,29 +1,24 @@
 import { useState, useEffect } from "react";
 import { userAPI } from "../services/api";
 
-const WithdrawToBank = ({ isOpen, onClose, onWithdrawSuccess }) => {
-  const [banks, setBanks] = useState([]);
-  const [selectedBankId, setSelectedBankId] = useState("");
+const WithdrawToBank = ({
+  isOpen,
+  onClose,
+  onWithdrawSuccess,
+  banks = [],
+  defaultBankId = "",
+}) => {
+  const [selectedBankId, setSelectedBankId] = useState(defaultBankId);
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Fetch bank accounts when modal opens
+  // Update selected bank when modal opens or defaultBankId changes
   useEffect(() => {
-    if (!isOpen) return;
-
-    const fetchBanks = async () => {
-      try {
-        const res = await userAPI.getBankAccounts(); // ✅ Correct method
-        setBanks(res.banks || []);
-        if (res.banks?.length > 0) setSelectedBankId(res.banks[0]._id);
-      } catch (err) {
-        console.error("Bank fetch error", err);
-        alert("Failed to fetch banks");
-      }
-    };
-
-    fetchBanks();
-  }, [isOpen]);
+    if (isOpen) {
+      setSelectedBankId(defaultBankId || (banks[0]?._id || ""));
+      setAmount(""); // reset amount each time modal opens
+    }
+  }, [isOpen, defaultBankId, banks]);
 
   const handleWithdraw = async () => {
     if (!selectedBankId) return alert("Please select a bank account");
@@ -40,7 +35,6 @@ const WithdrawToBank = ({ isOpen, onClose, onWithdrawSuccess }) => {
 
       if (result.data?.success) {
         alert(result.data.message || "Withdrawal successful");
-        setAmount("");
         onWithdrawSuccess(); // refresh wallet balance
         onClose(); // close modal
       } else {
@@ -62,13 +56,16 @@ const WithdrawToBank = ({ isOpen, onClose, onWithdrawSuccess }) => {
 
         <label className="block mb-2 font-medium">Bank Account:</label>
         <select
-          value={selectedBankId}
+          value={selectedBankId || ""}
           onChange={(e) => setSelectedBankId(e.target.value)}
           className="w-full border p-2 mb-4 rounded"
         >
+          <option value="" disabled>
+            -- Select Bank --
+          </option>
           {banks.map((bank) => (
             <option key={bank._id} value={bank._id}>
-              {bank.bankName} - {bank.accountNumber.slice(-4)}
+              {bank.bankName} - **** {bank.accountNumber.slice(-4)}
             </option>
           ))}
         </select>

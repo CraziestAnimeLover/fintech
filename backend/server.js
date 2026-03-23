@@ -34,7 +34,9 @@ app.use(
 /* ---------------- CORS ---------------- */
 const allowedOrigins = [
   "https://fintech-kappa-two.vercel.app",
-  "http://localhost:3000",
+  "https://infycorepayment.com",
+
+  "http://localhost:5173",
 ];
 
 app.use(

@@ -70,7 +70,16 @@ const BankSelectModal = ({ isOpen, onClose, walletBalance, refreshWallet }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg w-96">
+      <div className="bg-white p-6 rounded-lg w-96 relative">
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-xl font-bold"
+          aria-label="Close"
+        >
+          &times;
+        </button>
+
         <h2 className="text-xl font-semibold mb-4">Withdraw Funds</h2>
 
         <label className="block mb-2 font-medium">Select Bank Account:</label>

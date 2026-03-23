@@ -1,13 +1,21 @@
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL;
-// Create axios instance
+// ✅ Base URL WITHOUT /api
+// const api = axios.create({
+//   baseURL:
+//     process.env.NODE_ENV === "production"
+//       ? "https://v1.infycorepayment.com" // must match SSL
+//       : "http://localhost:5000",         // for local dev
+// });
 const api = axios.create({
-  baseURL: API_URL || "/api", 
-  
+  baseURL:"https://fintech-6bvt.onrender.com"
+            // for local dev
 });
 
-// Add token automatically
+// ==============================
+// INTERCEPTORS
+// ==============================
+
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -21,7 +29,6 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Handle response errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -37,147 +44,157 @@ api.interceptors.response.use(
   }
 );
 
-
 // ==============================
 // AUTH APIs
 // ==============================
 
 export const authAPI = {
-
-  // Send OTP for login
   sendOtp: (email, role) =>
-    api.post("/auth/send-otp", { email, role }),
+    api.post("/api/auth/send-otp", { email, role }),
 
-  // Verify OTP
   verifyOtp: (email, otp) =>
-    api.post("/auth/verify-otp", { email, otp }),
+    api.post("/api/auth/verify-otp", { email, otp }),
 
-  // Resend OTP
   resendOtp: (email) =>
-    api.post("/auth/resend-otp", { email }),
+    api.post("/api/auth/resend-otp", { email }),
 
-  // Normal login (optional)
   login: (email, password) =>
-    api.post("/auth/login", { email, password }),
+    api.post("/api/auth/login", { email, password }),
 
-  // Register user
   register: (name, email, password) =>
-    api.post("/auth/register", { name, email, password }),
+    api.post("/api/auth/register", { name, email, password }),
 
-  // Get current user
   getMe: () =>
-    api.get("/auth/me"),
+    api.get("/api/auth/me"),
 
-  // Logout
   logout: () =>
-    api.get("/auth/logout"),
-   googleLogin: (data) =>
-    api.post("/auth/google", data),
-};
+    api.get("/api/auth/logout"),
 
+  googleLogin: (data) =>
+    api.post("/api/auth/google", data),
+};
 
 // ==============================
 // ADMIN APIs
 // ==============================
+
 export const adminAPI = {
-  getWithdraws: () => api.get("/admin/withdraw-requests"),
-  approveWithdraw: (id) => api.put(`/admin/withdraws/${id}/approve`),
-  rejectWithdraw: (id) => api.put(`/admin/withdraws/${id}/reject`),
-  getDeposits: () => api.get("/admin/deposit-requests"),
-  approveDeposit: (id) => api.put(`/admin/deposits/${id}/approve`),
-  rejectDeposit: (id) => api.put(`/admin/deposits/${id}/reject`),
-  getStats: () => api.get("/admin/stats"),
-  getAllUsers: () => api.get("/admin/users"),
-  createUser: (data) => api.post("/admin/users", data),
-  // FIXED COMMISSIONS & AGENTS
-  updateUser: (id, data) => api.put(`/admin/users/${id}`, data),
-  deleteUser: (id) => api.delete(`/admin/users/${id}`),
-  // Admin API
-getCommissions: (params) => api.get("/commissions", { params }),
-getAgents: () => api.get("/agents"),
- verifyDocuments: (userId, data) =>
-    api.put(`/admin/documents/${userId}/verify`, data),
+  getWithdraws: () => api.get("/api/admin/withdraw-requests"),
+  approveWithdraw: (id) => api.put(`/api/admin/withdraws/${id}/approve`),
+  rejectWithdraw: (id) => api.put(`/api/admin/withdraws/${id}/reject`),
+
+  getDeposits: () => api.get("/api/admin/deposit-requests"),
+  approveDeposit: (id) => api.put(`/api/admin/deposits/${id}/approve`),
+  rejectDeposit: (id) => api.put(`/api/admin/deposits/${id}/reject`),
+
+  getStats: () => api.get("/api/admin/stats"),
+  getAllUsers: () => api.get("/api/admin/users"),
+
+  createUser: (data) => api.post("/api/admin/users", data),
+  updateUser: (id, data) => api.put(`/api/admin/users/${id}`, data),
+  deleteUser: (id) => api.delete(`/api/admin/users/${id}`),
+
+  getCommissions: (params) => api.get("/api/commissions", { params }),
+  getAgents: () => api.get("/api/agents"),
+
+  verifyDocuments: (userId, data) =>
+    api.put(`/api/admin/documents/${userId}/verify`, data),
 };
 
+// ==============================
+// USER APIs
+// ==============================
 
 export const userAPI = {
-  // ----- User Profile -----
-  getProfile: () => api.get("/users/profile"),
-  updateProfile: (data) => api.put("/users/profile", data),
-  updatePassword: (data) => api.put("/users/password", data),
+  getProfile: () => api.get("/api/users/profile"),
+  updateProfile: (data) => api.put("/api/users/profile", data),
+  updatePassword: (data) => api.put("/api/users/password", data),
 
-  // ----- Documents -----
-  uploadDocuments: (formData) => api.post("/users/documents", formData),
-  getDocuments: () => api.get("/users/documents"),
-  deleteDocument: (docKey) => api.delete(`/users/documents/${docKey}`),
+  uploadDocuments: (formData) =>
+    api.post("/api/users/documents", formData),
 
-  // ----- Company -----
-  createCompany: (data) => api.post("/users/company", data),
-  updateCompany: (data) => api.put("/users/company", data),
-  getCompany: () => api.get("/users/company"),
+  getDocuments: () => api.get("/api/users/documents"),
+  deleteDocument: (docKey) =>
+    api.delete(`/api/users/documents/${docKey}`),
 
-  // ----- Commercial -----
-  createCommercial: (data) => api.post("/users/commercial", data),
-  updateCommercial: (data) => api.put("/users/commercial", data),
-  getCommercial: () => api.get("/users/commercial"),
+  createCompany: (data) => api.post("/api/users/company", data),
+  updateCompany: (data) => api.put("/api/users/company", data),
+  getCompany: () => api.get("/api/users/company"),
 
-  // ----- Transactions -----
-  getTransactions: (filters) => api.get("/api/transactions", { params: filters }),
+  createCommercial: (data) =>
+    api.post("/api/users/commercial", data),
 
-  // ----- Wallet -----
-getWallet: () => api.get("/users/wallet"),
+  updateCommercial: (data) =>
+    api.put("/api/users/commercial", data),
 
-depositRequest: (data) => api.post("/users/deposit-request", data),
+  getCommercial: () => api.get("/api/users/commercial"),
 
-addMoney: (data) => api.post("/wallet/add", data),
-sendMoney: (data) => api.post("/wallet/send", data),
-withdraw: (data) => api.post("/wallet/withdraw", data),
+  getTransactions: (filters) =>
+    api.get("/api/transactions", { params: filters }),
 
-  // ----- Developer Keys -----
-  getDevKeys: () => api.get("/developer"),
-  generateDevKeys: (data) => api.post("/developer/generate", data),
-  updateDevKeys: (data) => api.put("/developer/update", data),
+  getWallet: () => api.get("/api/users/wallet"),
 
-  // ----- Bank Accounts -----
-// ----- Bank Accounts -----
-getBankAccounts: async () => {
-  const res = await api.get("/bank-accounts"); // ✅ USE api instance
-  return res.data;
-},
-addBankAccount: (data) => api.post("/bank-accounts", data),
+  depositRequest: (data) =>
+    api.post("/api/users/deposit-request", data),
 
-updateBankAccount: (id, data) =>
-  api.put(`/bank-accounts/${id}`, data),
+  addMoney: (data) =>
+    api.post("/api/wallet/add", data),
 
-deleteBankAccount: (id) =>
-  api.delete(`/bank-accounts/${id}`),
+  sendMoney: (data) =>
+    api.post("/api/wallet/send", data),
 
-setDefaultBank: (id) =>
-  api.put(`/bank-accounts/default/${id}`),
+  withdraw: (data) =>
+    api.post("/api/wallet/withdraw", data),
 
-// 🔥 ADD THIS (IMPORTANT)
-verifyBank: async (data) => {
-  const res = await api.post("/bank-accounts/verify", data);
-  return res.data;
-},
+  getDevKeys: () => api.get("/api/developer"),
+  generateDevKeys: (data) =>
+    api.post("/api/developer/generate", data),
 
-  // ----- OTP Verification -----
-  verifyOtp: (email, otp, role) => api.post("/auth/verify-otp", { email, otp, role }),
+  updateDevKeys: (data) =>
+    api.put("/api/developer/update", data),
+
+  getBankAccounts: async () => {
+    const res = await api.get("/api/bank/bank-accounts");
+    return res.data;
+  },
+
+  addBankAccount: (data) =>
+    api.post("/api/bank/bank-accounts", data),
+
+  updateBankAccount: (id, data) =>
+    api.put(`/api/bank/bank-accounts/${id}`, data),
+
+  deleteBankAccount: (id) =>
+    api.delete(`/api/bank/bank-accounts/${id}`),
+
+  setDefaultBank: (id) =>
+    api.put(`/api/bank/bank-accounts/default/${id}`),
+
+  verifyBank: async (data) => {
+    const res = await api.post("/api/bank/bank-accounts/verify", data);
+    return res.data;
+  },
+
+  verifyOtp: (email, otp, role) =>
+    api.post("/api/auth/verify-otp", { email, otp, role }),
 };
 
-export const agentAPI = {
+// ==============================
+// AGENT APIs
+// ==============================
 
+export const agentAPI = {
   getDashboardStats: () =>
-    api.get("/agents/dashboard"),
+    api.get("/api/agents/dashboard"),
 
   getTransactions: () =>
-    api.get("/agents/transactions"),
+    api.get("/api/agents/transactions"),
 
   withdrawCommission: (data) =>
-    api.post("/agents/withdraw-commission", data),
+    api.post("/api/agents/withdraw-commission", data),
 
   getCommissions: (params) =>
-    api.get("/agents/commissions", { params }),
+    api.get("/api/agents/commissions", { params }),
 };
 
 export default api;

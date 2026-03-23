@@ -228,13 +228,13 @@ const fetchBanks = async () => {
 
       {/* Withdraw Modal */}
       {showWithdrawModal && (
-        <WithdrawToBank
-          isOpen={showWithdrawModal}
-          onClose={() => setShowWithdrawModal(false)}
-          onWithdrawSuccess={fetchWallet}
-          user={user}
-          theme={theme}
-        />
+       <WithdrawToBank
+  isOpen={showWithdrawModal}
+  onClose={() => setShowWithdrawModal(false)}
+  onWithdrawSuccess={fetchWallet}
+  banks={banks}
+  defaultBankId={selectedBankId}
+/>
       )}
     </div>
   );
