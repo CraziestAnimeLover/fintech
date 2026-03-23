@@ -12,30 +12,22 @@ export async function sendOtpLogin(req, res) {
   try {
     const { email, role } = req.body;
 
-    if (!email) {
-      return res.status(400).json({ success: false, message: "Email is required" });
-    }
+    if (!email) return res.status(400).json({ success: false, message: "Email is required" });
 
     const user = await User.findOne({ email, role });
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
-    if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+    if (!user.generateOtp || typeof user.generateOtp !== "function") {
+      return res.status(500).json({ success: false, message: "OTP function not available" });
     }
 
     const otp = await user.generateOtp();
-    console.log(`Generated OTP for ${email}: ${otp}`);
-
     await sendOtp(email, otp);
 
-    res.status(200).json({ success: true, message: "OTP sent successfully" });
-
-  } catch (error) {
-    console.error("sendOtpLogin error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Error sending OTP",
-      error: error.message // include for debugging
-    });
+    return res.status(200).json({ success: true, message: "OTP sent successfully" });
+  } catch (err) {
+    console.error("sendOtpLogin error:", err);
+    return res.status(500).json({ success: false, message: "Internal server error" });
   }
 }
 
