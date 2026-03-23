@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => ({
     host: true, // exposes dev server to network (useful for devices/Docker)
     proxy: mode === 'development' ? {
       '/api': {
-        target: 'http://localhost:5000', // backend port
+        target: 'https://fintech-6bvt.onrender.com', // backend port
         changeOrigin: true,
         secure: false, // avoid SSL issues in dev
         rewrite: path => path.replace(/^\/api/, '/api'), // keeps /api path intact
