@@ -10,30 +10,47 @@ import jwt from "jsonwebtoken";
 // @route POST /api/auth/send-otp
 export async function sendOtpLogin(req, res) {
   try {
-    const { email, role } = req.body;
-    console.log("Request body:", req.body);
+    const { email } = req.body;
 
-    if (!email) return res.status(400).json({ success: false, message: "Email is required" });
+    console.log("BODY:", req.body);
 
-    const user = await User.findOne({ email, role });
+    if (!email) {
+      return res.status(400).json({ success: false, message: "Email is required" });
+    }
+
+    const user = await User.findOne({ email });
 
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    const otp = await user.generateOtp();
-    console.log(`Generated OTP for ${email}: ${otp}`);
+    let otp;
+    try {
+      otp = await user.generateOtp();
+      console.log("OTP:", otp);
+    } catch (err) {
+      console.error("OTP GENERATE ERROR:", err);
+      return res.status(500).json({ success: false, message: "OTP generation failed" });
+    }
 
-    await sendOtp(email, otp);
+    try {
+      await sendOtp(email, otp);
+    } catch (err) {
+      console.error("OTP SEND ERROR:", err);
+      return res.status(500).json({ success: false, message: "OTP sending failed" });
+    }
 
-    res.status(200).json({ success: true, message: "OTP sent successfully" });
+    res.status(200).json({
+      success: true,
+      message: "OTP sent successfully"
+    });
 
   } catch (error) {
-    console.error("sendOtpLogin error:", error);
+    console.error("FINAL ERROR:", error);
     res.status(500).json({
       success: false,
-      message: "Error sending OTP",
-      error: error.message // include for debugging
+      message: "Internal server error",
+      error: error.message
     });
   }
 }
