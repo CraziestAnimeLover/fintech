@@ -1,67 +1,74 @@
-import { Resend } from "resend";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import nodemailer from "nodemailer";
 
 /**
- * Send OTP via Resend
+ * Create transporter (reusable)
+ */
+const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false, // TLS
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS, // App Password
+  },
+  tls: {
+    rejectUnauthorized: false,
+  },
+  connectionTimeout: 15000, // prevent timeout
+});
+
+/**
+ * Send OTP via Email
  */
 export async function sendOtp(email, otp) {
   try {
-    // Fallback if API key missing (dev mode)
-    if (!process.env.RESEND_API_KEY) {
-      console.log("⚠️ RESEND_API_KEY not found");
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+      console.log("⚠️ Email config missing");
       console.log(`OTP for ${email}: ${otp}`);
       return { success: true, devMode: true };
     }
 
-    const response = await resend.emails.send({
-      from: process.env.FROM_EMAIL || "onboarding@resend.dev",
+    const info = await transporter.sendMail({
+      from: `"OTP Service" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "Your Verification Code",
       html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 500px; margin: 0 auto;">
-          <h2 style="color: #333;">Email Verification</h2>
-          <p>Your verification code is:</p>
-          <div style="background: #f4f4f4; padding: 15px; font-size: 24px; font-weight: bold; text-align: center; letter-spacing: 5px; margin: 20px 0;">
-            ${otp}
-          </div>
-          <p style="color: #666; font-size: 14px;">This code expires in 10 minutes.</p>
-          <p style="color: #999; font-size: 12px;">If you didn't request this, please ignore this email.</p>
+        <div style="font-family: Arial; padding:20px;">
+          <h2>Email Verification</h2>
+          <p>Your OTP is:</p>
+          <h1 style="letter-spacing:5px;">${otp}</h1>
+          <p>This code expires in 10 minutes.</p>
         </div>
-      `
+      `,
     });
 
-    console.log("✅ Email sent:", response);
+    console.log("✅ Email sent:", info.messageId);
 
-    return { success: true, data: response };
+    return { success: true, messageId: info.messageId };
 
   } catch (error) {
-    console.error("❌ Error sending email:", error);
+    console.error("❌ Email error:", error);
     throw new Error("Failed to send OTP email");
   }
 }
-
 
 /**
  * Send verification success email
  */
 export async function sendVerificationSuccess(email) {
   try {
-    if (!process.env.RESEND_API_KEY) {
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
       return { success: true, devMode: true };
     }
 
-    await resend.emails.send({
-      from: process.env.FROM_EMAIL || "onboarding@resend.dev",
+    await transporter.sendMail({
+      from: `"OTP Service" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "Email Verified Successfully",
       html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 500px; margin: 0 auto;">
-          <h2 style="color: #28a745;">✓ Verified!</h2>
-          <p>Your email address has been successfully verified.</p>
-          <p>You can now access all features of our platform.</p>
-        </div>
-      `
+        <h2 style="color:green;">✔ Verified</h2>
+        <p>Your email has been successfully verified.</p>
+      `,
     });
 
     return { success: true };
