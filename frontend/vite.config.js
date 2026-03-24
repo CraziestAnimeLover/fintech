@@ -7,13 +7,18 @@ export default defineConfig(({ mode }) => ({
   define: {
     'process.env': process.env, // optional for accessing env vars
   },
-//  server: {
-//   proxy: {
-//     "/api": {
-//       target: "http://localhost:5000",
-//       changeOrigin: true,
-//       secure: false,
-//     },
-//   },
-// }
+
+
+  server: {
+    port: 3000,
+    host: true, // exposes dev server to network (useful for devices/Docker)
+    proxy: mode === 'development' ? {
+      '/api': {
+        target: 'https://fintech-6bvt.onrender.com', // backend port
+        changeOrigin: true,
+        secure: false, // avoid SSL issues in dev
+        rewrite: path => path.replace(/^\/api/, '/api'), // keeps /api path intact
+      }
+    } : undefined
+  }
 }));
